@@ -14,13 +14,15 @@
 row = LOAD 'friendship-20-persons.txt' using PigStorage('\n')  AS (line:chararray);
 
 --splitting each line into two parts: user, friends(string)
-w2 = FOREACH row GENERATE FLATTEN(STRSPLIT(line, ' ',2)) AS (user:chararray, friends:chararray);
+userAndFriends = FOREACH row GENERATE FLATTEN(STRSPLIT(line, ' ',2)) AS (user:chararray, friends:chararray);
 
 --splitting the friends-string into words and placing them into a tuple
-w3 = foreach w2 generate user, STRSPLIT(friends, ' ') AS (y:tuple());
+tupled = foreach userAndFriends generate user, STRSPLIT(friends, ' ') AS (y:tuple());
 
 --for each line in (meaning for each user), calculate the tuple size(friends) 
-w4 = foreach w3 generate user, SIZE(y);
+final = foreach tupled generate user, SIZE(y);
+
+STORE final INTO 'CountFriendsResult';
 
 --display result
-Dump w4;
+Dump final;
