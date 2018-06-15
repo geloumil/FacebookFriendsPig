@@ -63,4 +63,6 @@ result = FOREACH grouped_list GENERATE group, distinct_list.$1;
 --into strings and keep only the unique ones.
 final = FOREACH result GENERATE $0,  org.apache.pig.builtin.Distinct(TOKENIZE(REPLACE(BagToString(TOBAG($1)), '[{()}]', ''))) as friendList;
 
+STORE final INTO 'CommonFriendsResult';
+
 dump final
