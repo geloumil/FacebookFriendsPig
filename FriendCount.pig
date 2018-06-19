@@ -11,7 +11,7 @@
 
 
 --load file into row (aka strings which have spaces)
-row = LOAD 'friendship-20-persons.txt' using PigStorage('\n')  AS (line:chararray);
+row = LOAD 'friendship-500-persons.txt' using PigStorage('\n')  AS (line:chararray);
 
 --splitting each line into two parts: user, friends(string)
 userAndFriends = FOREACH row GENERATE FLATTEN(STRSPLIT(line, ' ',2)) AS (user:chararray, friends:chararray);
@@ -25,4 +25,4 @@ final = foreach tupled generate user, SIZE(y);
 STORE final INTO 'CountFriendsResult';
 
 --display result
-Dump final;
+--Dump final;

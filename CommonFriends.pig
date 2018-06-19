@@ -56,13 +56,21 @@ grouped_list = GROUP distinct_list BY $0;
 
 
 --Removing duplicate pair of grouping result----> (personA,personB), {(personA friends),(personB friends)}
-result = FOREACH grouped_list GENERATE group, distinct_list.$1;
+result = FOREACH grouped_list GENERATE group as pair, distinct_list.$1 as friendlist;
 
+--Removing the to-be-examined friends from the friendlist
+result = FOREACH result GENERATE pair, REPLACE(BagToString(TOBAG(friendlist)), pair.$0, '') as friendlist;
+result = FOREACH result GENERATE pair, REPLACE(BagToString(TOBAG(friendlist)), pair.$1, '') as friendlist;
 
---In order to keep only the unique common friends, we convert the grouping part:{(personA friends),(personB friends)}
---into strings and keep only the unique ones.
-final = FOREACH result GENERATE $0,  org.apache.pig.builtin.Distinct(TOKENIZE(REPLACE(BagToString(TOBAG($1)), '[{()}]', ''))) as friendList;
+--Registering UDF jar file
+REGISTER 'UDF.jar';
 
-STORE final INTO 'CommonFriendsResult';
+--Defining Function Name
+DEFINE myUDF myUDF();
 
-dump final
+--Calling the UDF for every friendlist
+res = FOREACH result GENERATE pair,myUDF(friendlist);
+
+--dump res;
+
+STORE res INTO 'CommonFriendsResult';
